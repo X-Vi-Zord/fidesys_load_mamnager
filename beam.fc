@@ -1,0 +1,239 @@
+{
+   "blocks" : 
+   [
+      {
+         "cs_id" : 1,
+         "id" : 1,
+         "material_id" : 1,
+         "property_id" : 1
+      }
+   ],
+   "coordinate_systems" : 
+   [
+      {
+         "dir1" : [ 1.0, 0.0, 0.0 ],
+         "dir2" : [ 0.0, 1.0, 0.0 ],
+         "id" : 1,
+         "name" : "\u0413\u043b\u043e\u0431\u0430\u043b\u044c\u043d\u0430\u044f \u0434\u0435\u043a\u0430\u0440\u0442\u043e\u0432\u0430",
+         "origin" : [ 0.0, 0.0, 0.0 ],
+         "type" : "cartesian"
+      }
+   ],
+   "header" : 
+   {
+      "binary" : false,
+      "description" : "Fidesys Case Format",
+      "types" : 
+      {
+         "char" : 1,
+         "double" : 8,
+         "int" : 4,
+         "short_int" : 2
+      },
+      "version" : 3
+   },
+   "loads" : 
+   [
+      {
+         "apply_to" : [ 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 2 ],
+         "apply_to_size" : 11,
+         "cs" : 1,
+         "data" : 
+         [
+            [ 0.0 ],
+            [ 0.0 ],
+            [ -10000.0 ],
+            [ 0.0 ],
+            [ 0.0 ],
+            [ 0.0 ]
+         ],
+         "dependency_type" : [ 0, 0, 0, 0, 0, 0 ],
+         "id" : 1,
+         "name" : "Force",
+         "type" : 5
+      }
+   ],
+   "materials" : 
+   [
+      {
+         "common" : 
+         [
+            {
+               "const_dep" : [ "" ],
+               "const_dep_size" : [ 0 ],
+               "const_names" : [ 0 ],
+               "const_types" : [ 0 ],
+               "constants" : 
+               [
+                  [ 8000.0 ]
+               ],
+               "type" : 0
+            }
+         ],
+         "elasticity" : 
+         [
+            {
+               "const_dep" : [ "", "" ],
+               "const_dep_size" : [ 0, 0 ],
+               "const_names" : [ 0, 1 ],
+               "const_types" : [ 0, 0 ],
+               "constants" : 
+               [
+                  [ 200000000000.0 ],
+                  [ 0.29999999999999999 ]
+               ],
+               "type" : 0
+            }
+         ],
+         "id" : 1,
+         "name" : "material"
+      }
+   ],
+   "mesh" : 
+   {
+      "elem_blocks" : [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ],
+      "elem_orders" : [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ],
+      "elem_parent_ids" : [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ],
+      "elem_types" : [ 89, 89, 89, 89, 89, 89, 89, 89, 89, 89 ],
+      "elemids" : [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ],
+      "elems" : 
+      [
+         [ 1, 3 ],
+         [ 3, 4 ],
+         [ 4, 5 ],
+         [ 5, 6 ],
+         [ 6, 7 ],
+         [ 7, 8 ],
+         [ 8, 9 ],
+         [ 9, 10 ],
+         [ 10, 11 ],
+         [ 11, 2 ]
+      ],
+      "elems_count" : 10,
+      "nids" : [ 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 2 ],
+      "nodes" : 
+      [
+         [ 0.0, 0.0, 0.0 ],
+         [ 0.19999999999999998, 0.0, 0.0 ],
+         [ 0.39999999999999997, 0.0, 0.0 ],
+         [ 0.59999999999999998, 0.0, 0.0 ],
+         [ 0.79999999999999993, 0.0, 0.0 ],
+         [ 0.99999999999999989, 0.0, 0.0 ],
+         [ 1.2, 0.0, 0.0 ],
+         [ 1.3999999999999999, 0.0, 0.0 ],
+         [ 1.5999999999999999, 0.0, 0.0 ],
+         [ 1.7999999999999998, 0.0, 0.0 ],
+         [ 2.0, 0.0, 0.0 ]
+      ],
+      "nodes_count" : 11
+   },
+   "property_tables" : 
+   [
+      {
+         "id" : 1,
+         "properties" : 
+         {
+            "I-Beam" : 1,
+            "angle" : 0.0,
+            "ey" : 0.0,
+            "ez" : 0.0,
+            "geometry" : 
+            {
+               "B1" : 0.055,
+               "B2" : 0.055,
+               "H" : 0.10000000000000001,
+               "c1" : 0.0071999999999999998,
+               "c2" : 0.0071999999999999998,
+               "d" : 0.0044999999999999997
+            },
+            "mesh_quality" : 6.0,
+            "section_type" : 2,
+            "warping_dof" : 0.0
+         },
+         "type" : 1
+      }
+   ],
+   "restraints" : 
+   [
+      {
+         "apply_to" : [ 1, 2 ],
+         "apply_to_size" : 2,
+         "cs" : 1,
+         "data" : 
+         [
+            [ 0.0 ],
+            [ 0.0 ],
+            [ 0.0 ],
+            [ 0.0 ],
+            [ 0.0 ],
+            [ 0.0 ]
+         ],
+         "dep_var_num" : [ "", "", "", "", "", "" ],
+         "dep_var_size" : [ 0, 0, 0, 0, 0, 0 ],
+         "dependency_type" : [ 0, 0, 0, 0, 0, 0 ],
+         "flag" : [ 1, 1, 1, 1, 1, 1 ],
+         "id" : 1,
+         "name" : ""
+      }
+   ],
+   "settings" : 
+   {
+      "bc_tolerance" : 0.00050000000000000001,
+      "dimensions" : "3D",
+      "elasticity" : true,
+      "environment" : 
+      {
+         "temperature" : 0.0
+      },
+      "finite_deformations" : false,
+      "heat_transfer" : false,
+      "incompressibility" : false,
+      "linear_solver" : 
+      {
+         "iter_opts" : 
+         {
+            "epsilon" : 1.0000000000000001e-09,
+            "max_iterations" : 50000,
+            "preconditioner" : "auto",
+            "stopping_criteria" : 0.0
+         },
+         "method" : "auto",
+         "on_fail" : true,
+         "use_uzawa" : "auto"
+      },
+      "nonlinear_solver" : 
+      {
+         "arc_method" : false,
+         "line_search" : false,
+         "max_iterations" : 100,
+         "max_load_steps" : 1000,
+         "min_load_steps" : 1,
+         "target_iter" : 5,
+         "tolerance" : 0.001
+      },
+      "output" : 
+      {
+         "energy" : true,
+         "full_periodic" : false,
+         "intermediate_results" : true,
+         "log" : true,
+         "material" : false,
+         "normal_force" : true,
+         "record3d" : true,
+         "trackingForce" : false,
+         "vtu" : true,
+         "without_smoothing" : false
+      },
+      "permission_write" : true,
+      "plasticity" : false,
+      "porefluid_transfer" : false,
+      "radiation_among_surfaces" : false,
+      "slm" : false,
+      "statics" : 
+      {
+         "result_output_iter" : 1
+      },
+      "test_opts" : null,
+      "type" : "static"
+   }
+}
