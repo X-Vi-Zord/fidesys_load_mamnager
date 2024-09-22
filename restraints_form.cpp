@@ -4,6 +4,8 @@
 
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QDoubleValidator>
+
 restraints_form::restraints_form(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::restraints_form)
@@ -12,6 +14,9 @@ restraints_form::restraints_form(QWidget *parent)
 
     lanes = {ui->lineEdit,ui->lineEdit_2,ui->lineEdit_3,ui->lineEdit_4,ui->lineEdit_5,ui->lineEdit_6};
     Check = {ui->checkBox,ui->checkBox_2,ui->checkBox_3,ui->checkBox_4,ui->checkBox_5,ui->checkBox_6};
+    for(const auto& line : lanes) {
+        line->setValidator(new QDoubleValidator(this));
+    }
 }
 
 restraints_form::~restraints_form()
