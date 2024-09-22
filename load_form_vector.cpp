@@ -4,6 +4,8 @@
 
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QDoubleValidator>
+
 load_form_vector::load_form_vector(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::load_form_vector)
@@ -11,6 +13,9 @@ load_form_vector::load_form_vector(QWidget *parent)
     ui->setupUi(this);
 
     lanes = {ui->lineEdit,ui->lineEdit_2,ui->lineEdit_3,ui->lineEdit_4,ui->lineEdit_5,ui->lineEdit_6};
+    for(const auto& line : lanes) {
+        line->setValidator(new QDoubleValidator(this));
+    }
 }
 
 load_form_vector::~load_form_vector()
