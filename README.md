@@ -1,4 +1,4 @@
-# fidesys_load_mamnager
+# fidesys_load_manager
 Тестовое задание для Fidesys, для иллюстрации навыков работы с qt.
 
 Задание:
