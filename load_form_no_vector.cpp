@@ -4,12 +4,16 @@
 
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QDoubleValidator>
+
 
 load_form_no_vector::load_form_no_vector(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::load_form_no_vector)
 {
     ui->setupUi(this);
+    ui->lineEdit->setValidator(new QDoubleValidator(this));
+
 
 }
 
