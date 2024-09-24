@@ -1,15 +1,9 @@
 # fidesys_load_manager
-Тестовое задание для Fidesys, для иллюстрации навыков работы с qt.
 
-Задание:
-Написать программу, которая позволит посмотреть приложенные нагрузки и ограничения в модели,
-поменять их в случае необходимости и отправить на расчёт по нажатию кнопки.
-в качестве рассматриваемых ГУ рассмотреть: - перемещения.
-в качестве нагрузок: точечная сила, давление, распределённая нагрузка.
+**Test Assignment for Fidesys to Illustrate Skills in Qt.**
 
-Подробности: 
-Файл проекта Fidesys можно экспортировать в формате .fc который далее рассматривается как JsonObject
-Через инструменты Qt Json создаётся копия с изменнёными параметрами и отправляется на расчёт.
+**Task:** Write a program that allows users to view the attached loads and constraints in the model, modify them if necessary, and send them for calculation with the push of a button. The following General Uses (GUs) should be considered: - displacements. The following loads should be considered: point force, pressure, distributed load.
 
-Работает на C++, qt6.
+**Details:** The Fidesys project file can be exported in .fc format, which is then treated as a JsonObject. Using Qt's JSON tools, a copy with modified parameters is created and sent for calculation.
 
+Implemented in C++, Qt6.
