@@ -34,8 +34,6 @@ public slots:
 
 private slots :
 
-    void on_path_textEdited(const QString);
-
     void on_pushButton_clicked();
 
     void on_Save_clicked();
