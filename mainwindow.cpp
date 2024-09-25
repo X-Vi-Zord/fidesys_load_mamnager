@@ -3,7 +3,6 @@
 
 // Libs for Interface
 #include <QFileDialog>
-
 // Working with Files
 #include <QCoreApplication>
 #include <QFile>
@@ -15,25 +14,22 @@
 #include <QProcess>
 #include <QMessageBox>
 
-
-
-// for setup
-#include <QDebug>
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    _lines = {ui->arg_1, ui->arg_2, ui->arg_3, ui->arg_4, ui->arg_5, ui->arg_6};
-    _labels = {ui->com_1, ui->com_2, ui->com_3, ui->com_4, ui->com_5, ui->com_6};
-    _flags = {ui->fl_1, ui->fl_2, ui->fl_3, ui->fl_4, ui->fl_5, ui->fl_6};
+    _lines = {ui->x_le, ui->y_le, ui->z_le, ui->Mom_x_le, ui->Mom_y_le, ui->Mom_z_le};
+    _labels = {ui->x_lbl, ui->y_lbl, ui->z_lbl, ui->Mom_x_lbl, ui->Mom_y_lbl, ui->Mom_z_lbl};
+    _flags = {ui->x_ChBx, ui->y_ChBx, ui->z_ChBx, ui->Mom_x_ChBx, ui->Mom_y_ChBx, ui->Mom_z_CheBx};
     _model = new QStandardItemModel(ui->treeView);
+    createTree();
+    ui->treeView->setModel(_model);
     hide();
     ui->treeView->header()->hide();
-    ui->Save->hide(); ui->parameters->hide();
+    ui->Save_Bm->hide(); ui->parameters->hide();
     this->setMinimumSize(680,640);
-    connect(ui->treeView, &QTreeView::clicked, this, &MainWindow::handleItemClicked);
+    connect(ui->treeView, &QTreeView::clicked, this, &MainWindow::takeItemFromTree);
 }
 
 MainWindow::~MainWindow()
@@ -41,45 +37,39 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::find_conditions()
+void MainWindow::findConditions()
 {
     if(!_doc.contains("restraints")) {
         qCritical() << "no restraints";
     }
     else{
-        set_conditions("restraints",_doc["restraints"].toArray().size());
+        for (const auto restraint : _doc["restraints"].toArray()){
+            setConditions(restraint.toObject()["id"].toInt());
+        }
     }
     if(_doc["loads"].isNull()){
         qCritical() << "no loads";
         return;
     }
-    int i = 0;
-    QString key = "";
     for (const auto& load : _doc["loads"].toArray()){
-        if (load.toObject()["name"] != key) {
-            // тут отправляем кол-во элементов
-            if(i!=0) {
-                set_conditions(key.toLower(), i);
-            }
-            key = load.toObject()["name"].toString();
-            i=0;
-        }
-        i++;}
-    set_conditions(key.toLower(), i);
+        setConditions(load.toObject()["id"].toInt(),load.toObject()["name"].toString().toLower(), load.toObject()["type"].toInt());
+    }
 }
 
-void MainWindow::set_conditions(const QString name, const int value)
+void MainWindow::setConditions(const unsigned id, const QString name, const unsigned type)
 {
-    QStandardItem *item1 = new QStandardItem(name);
-    for(int i = 0; i<value ;i++) {
-        QStandardItem *subitem = new QStandardItem(name +"_" + QString("%1").arg(i+1));
-        subitem->setFlags(item1->flags() & ~Qt::ItemIsEditable);
-        item1->appendRow(subitem);
+    // type of load by name
+    for(int row = 0; row < _model->rowCount();row++){
+        if(_model->item(row)->text() == _loads[type]){
+            QStandardItem *subitem = new QStandardItem();
+            subitem->setData(type,1);
+            subitem->setData(name,2);
+            subitem->setData(id,3);
+            subitem->setFlags(_model->item(row)->flags() & ~Qt::ItemIsEditable);
+            _model->item(row)->appendRow(subitem);
+            return;
+        }
     }
-    _model->appendRow(item1);
-    item1->setFlags(item1->flags() & ~Qt::ItemIsEditable);
-    ui->treeView->setModel(_model);
-    update();
 }
 
 void MainWindow::hide() const
@@ -89,8 +79,10 @@ void MainWindow::hide() const
         _flags[i]->hide();
         _labels[i]->hide();
     }
-    ui->arg_pressure->hide(); ui->com_7->hide();
-
+    ui->pres_le->hide();
+    ui->pres_lbl->hide();
+    ui->displ_nt_lbl->hide();
+    ui->displ_nt_le->hide();
 }
 
 void MainWindow::display() const
@@ -98,14 +90,18 @@ void MainWindow::display() const
     if(_buffer.isEmpty()){
         return;
     }
-    ui->Save->show(); ui->parameters->show();
+    ui->Save_Bm->show(); ui->parameters->show();
     if(_buffer.contains("flag")) {
+        ui->displ_nt_lbl->show();
+        ui->displ_nt_le->show();
+        ui->displ_nt_le->setText("0");
         for(int i = 0; i < 6 ;i++) {
-            _lines[i]->show();
             _flags[i]->show();
-            _lines[i]->setText(QString::number(_buffer.value("data")[i][0].toDouble()));
-            _flags[i]->setChecked(static_cast<bool>(_buffer.value("flag")[i].toInt()));
+            _flags[i]->setChecked(_buffer.value("flag")[i].toInt());
             _labels[i]->show();
+            if(_buffer["data"][0][i]!=0) {
+                ui->displ_nt_le->setText(QString::number(_buffer.value("data")[i][0].toDouble()));
+            }
         }
     return;}
     if(_buffer["data"].toArray().size() > 1) {
@@ -114,70 +110,47 @@ void MainWindow::display() const
         _lines[i]->setText(QString::number(_buffer.value("data")[i][0].toDouble()));
         _labels[i]->show();}
     }else{
-        ui->arg_pressure->show();
-        ui->arg_pressure->setText(QString::number(_buffer.value("data")[0][0].toDouble()));
-        ui->com_7->show();
+        ui->pres_le->show();
+        ui->pres_le->setText(QString::number(_buffer.value("data")[0][0].toDouble()));
+        ui->pres_lbl->show();
     }
 }
 
-void MainWindow::handleItemClicked(const QModelIndex &index)
+void MainWindow::takeItemFromTree(const QModelIndex &index)
 {
-    const int id = _model->itemFromIndex(index)->text().section("_",-1).toInt()-1;
-    qDebug() << id;
     if (!index.parent().isValid()) {
         return;}
-    const QString parent = _model->itemFromIndex(index.parent())->text();
-    if(parent.toLower() == "restraints")
-    {
-        _buffer = _doc["restraints"][id].toObject();
+    item =  _model->itemFromIndex(index);
+    if (!(item->data(1).toInt() == 0)) {
+        for(const auto& value : _doc["loads"].toArray()){
+            QJsonObject iterator = value.toObject();
+            if (iterator["id"].toInt()==item->data(3).toInt()&&iterator["type"].toInt()==item->data(1).toInt()){
+                _buffer = iterator;
+                break;
+            }
+        }
+    }else{
+        for(const auto& value : _doc["restraints"].toArray()){
+            QJsonObject iterator = value.toObject();
+            if (iterator["id"]==item->data(3).toInt()){
+                _buffer = iterator;
+                break;
+            }
+        }
     }
-    else {
-        qDebug() << _doc["loads"];
-        for (const auto& value : _doc["loads"].toArray()){
-            _buffer = value.toObject();
-            qDebug() << _buffer["id"];
-            if(_buffer["name"].toString().toLower()== parent && _buffer["id"] == id+1){
-                break;}}}
     hide();
     display();
 }
 
-void MainWindow::on_Save_clicked()
+void MainWindow::TakeChanges()
 {
-    QJsonArray data, flag;
-        for(int i = 0; i < 6; i++){
-            QJsonArray rowdata;
-            rowdata.append(_lines[i]->text().toDouble());
-            data.append(rowdata);
-            flag.append(_flags[i]->isChecked()?1:0);
-        }
-    QJsonArray pres, rowpres;
-    rowpres.append(ui->arg_pressure->text().toDouble());
-    pres.append(rowpres);
-    if (_buffer.contains("flag")) {
-        _buffer.insert("flag", flag);
-        _buffer.insert("data", data);
-    }
-    else if(_buffer["data"].toArray().size() > 2) {
-        _buffer.insert("data", data);
-    }
-    else {
-        _buffer.insert("data", pres);
-    }
-    take_Changes();
-}
-
-
-void MainWindow::take_Changes()
-{
-    if(!_flags[0]->isHidden()) {
+    if(item->data(1).toInt() == 0) {
         QJsonArray r_array =  _doc["restraints"].toArray();
         for( int i = 0; i < r_array.size();i++) {
-            if (r_array[i].toObject()["id"]==_buffer["id"]){
-                r_array[i] = QJsonValue(QJsonObject(_buffer));
-                _doc["restraints"]=r_array;
-                statusBar()->showMessage("Changes from restraints_" +  QString::number(_buffer["id"].toInt()) + " saved", 3000);
-
+            if (r_array[i].toObject()["id"]==item->data(3).toInt()){
+                r_array[i] = QJsonValue(_buffer);
+                _doc.insert("restraints",r_array);
+                statusBar()->showMessage("Changes for" + item->data(2).toString() +  item->data(3).toString() + " saved");
                 return;}
         }
     }
@@ -186,36 +159,88 @@ void MainWindow::take_Changes()
         if (l_array[i].toObject()["id"]==_buffer["id"] && l_array[i].toObject()["name"] ==_buffer["name"]){
             l_array[i] = QJsonValue(QJsonObject(_buffer));
             _doc["loads"] = l_array;
-            statusBar()->showMessage("Changes from " + _buffer["name"].toString().toLower() +"_"+ QString::number(_buffer["id"].toInt()) + " saved", 3000);
+            statusBar()->showMessage("Changes for" + item->data(2).toString() +  item->data(3).toString() + " saved");
             return;}
     }
 }
 
-bool MainWindow::on_Start_clicked()
+void MainWindow::createTree()
 {
+    for(auto const& imap: _loads) {
+        QStandardItem *item = new QStandardItem(imap.second);
+        _model->appendRow(item);
+        item->setFlags(item->flags() & ~Qt::ItemIsEditable);
+    }
+}
 
+void MainWindow::on_find_file_Bm_clicked()
+{
+    QString filePath = QFileDialog::getOpenFileName(this);
+    if (filePath.isEmpty()){
+        statusBar()->showMessage("file is Empty");
+        return;
+    }
+    QFile file(filePath);
+    if (!file.open(QFile::ReadOnly | QFile::Text)) {
+        QMessageBox::warning(this, tr("%1").arg(filePath),
+                             tr("Can't open file %1\nError: %2.")
+                                 .arg(filePath)
+                                 .arg(file.errorString()));
+        return;
+    }
+
+    _doc = (QJsonDocument::fromJson(file.readAll())).object();
+    _model->clear();
+    createTree();
+    findConditions();
+    hide();
+    ui->Save_Bm->hide();
+    ui->parameters->hide();
+    statusBar()->showMessage("file " + filePath.section("/",-1) +  " is open");
+    ui->filename_lbl->setText(filePath.section("/",-1));
+}
+
+void MainWindow::on_Save_Bm_clicked()
+{
+    QJsonArray data, flag, pres, subpres, displace;
+    for(int i = 0; i < 6; i++){
+        QJsonArray subdata, subdisplace;
+        subdisplace.append(0.0);
+        displace.append(subdisplace);
+        subdata.append(_lines[i]->text().toDouble());
+        data.append(subdata);
+        flag.append(_flags[i]->isChecked()?1:0);
+    }
+    QJsonArray subdis;
+    subdis.append(ui->displ_nt_le->text().toDouble());
+    displace.pop_back();
+    displace.append(subdis);
+    subpres.append(ui->pres_le->text().toDouble());
+    pres.append(subpres);
+    switch (item->data(1).toInt()) {
+    case 0:     {_buffer.insert("flag", flag);_buffer.insert("data", displace);break;}
+    case 3:     {_buffer.insert("data", pres);break;}
+    default:    {_buffer.insert("data", data);break;}
+    }
+    TakeChanges();
+}
+
+bool MainWindow::on_Start_Bm_clicked()
+{
     statusBar()->showMessage("Calculation started");
     QApplication::processEvents();
     QFile tmp_fc("tmp.fc");
     if (!tmp_fc.open(QIODevice::WriteOnly))
     {
         qCritical() << "Can't write new .fc file";
-        statusBar()->showMessage("Can't write new .fc file", 3000);
+        statusBar()->showMessage("Can't write new .fc file");
         return false;
     }
     tmp_fc.write(QJsonDocument(_doc).toJson(QJsonDocument::Indented));
     tmp_fc.close();
 
-    QString path_to_Calc = "D:/CAE-Fidesys-7.0";
+    QString path_to_Calc = "D:/CAE-Fidesys-7.0/bin/FidesysCalc.exe";
 
-    if (QSysInfo::kernelType() != "linux")
-    {
-        path_to_Calc += "/bin/FidesysCalc.exe";
-    }
-    else
-        path_to_Calc += "/calc/bin/FidesysCalc";
-
-    qInfo() << "Path to FidesysCalc:" << path_to_Calc;
     if (!QFile(path_to_Calc).exists())
     {
         qCritical() << "FidesysCalc not found!";
@@ -255,30 +280,4 @@ bool MainWindow::on_Start_clicked()
     qInfo() << "!!DONE!!";
     statusBar()->showMessage("Calculation is DONE");
     return true;
-}
-
-void MainWindow::on_pushButton_clicked()
-{
-
-    QString fileName = QFileDialog::getOpenFileName(this);
-    if (fileName.isEmpty()){
-        statusBar()->showMessage("file is Empty");
-            return;
-    }
-    QFile file(fileName);
-    if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        QMessageBox::warning(this, tr("%1").arg(fileName),
-                             tr("Can't open file %1\nError: %2.")
-                                 .arg(fileName)
-                                 .arg(file.errorString()));
-        return;
-    }
-    QJsonDocument file_json(QJsonDocument::fromJson(file.readAll()));
-    _doc = file_json.object();
-    _model->clear();
-    _model->setObjectName(fileName.section("/",-1));
-    find_conditions();
-    hide();
-    ui->Save->hide(); ui->parameters->hide();
-    statusBar()->showMessage("file " + fileName.section("/",-1) +  " is open");
 }

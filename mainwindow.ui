@@ -19,16 +19,6 @@
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
        <layout class="QGridLayout" name="gridLayout_2">
-        <item row="2" column="0">
-         <widget class="QTreeView" name="treeView">
-          <property name="minimumSize">
-           <size>
-            <width>326</width>
-            <height>0</height>
-           </size>
-          </property>
-         </widget>
-        </item>
         <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
          <widget class="QLabel" name="parameters">
           <property name="text">
@@ -36,10 +26,17 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="1">
+        <item row="4" column="0" alignment="Qt::AlignmentFlag::AlignTop">
+         <widget class="QPushButton" name="Start_Bm">
+          <property name="text">
+           <string>Start calculation</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
-           <widget class="QPushButton" name="Save">
+           <widget class="QPushButton" name="Save_Bm">
             <property name="text">
              <string>Save Changes</string>
             </property>
@@ -60,47 +57,60 @@
           </item>
          </layout>
         </item>
-        <item row="3" column="0" alignment="Qt::AlignmentFlag::AlignTop">
-         <widget class="QPushButton" name="Start">
+        <item row="1" column="0">
+         <widget class="QPushButton" name="find_file_Bm">
+          <property name="minimumSize">
+           <size>
+            <width>270</width>
+            <height>0</height>
+           </size>
+          </property>
           <property name="text">
-           <string>Start calculation</string>
+           <string>select file</string>
           </property>
          </widget>
         </item>
-        <item row="2" column="1">
+        <item row="3" column="1">
          <layout class="QGridLayout" name="gridLayout">
-          <item row="5" column="2">
-           <widget class="QCheckBox" name="fl_6">
+          <item row="2" column="2">
+           <widget class="QCheckBox" name="z_ChBx">
             <property name="text">
              <string/>
             </property>
            </widget>
           </item>
-          <item row="0" column="0" alignment="Qt::AlignmentFlag::AlignHCenter">
-           <widget class="QLabel" name="com_1">
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="y_le"/>
+          </item>
+          <item row="2" column="0" alignment="Qt::AlignmentFlag::AlignHCenter">
+           <widget class="QLabel" name="z_lbl">
             <property name="text">
-             <string>X</string>
+             <string>Z</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="2">
-           <widget class="QCheckBox" name="fl_2">
+          <item row="4" column="0">
+           <widget class="QLabel" name="Mom_y_lbl">
+            <property name="text">
+             <string>moment Y</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="Mom_z_lbl">
+            <property name="text">
+             <string>moment Z</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2">
+           <widget class="QCheckBox" name="Mom_x_ChBx">
             <property name="text">
              <string/>
             </property>
            </widget>
           </item>
-          <item row="4" column="2">
-           <widget class="QCheckBox" name="fl_5">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QLineEdit" name="arg_4"/>
-          </item>
-          <item row="7" column="1">
+          <item row="8" column="1">
            <spacer name="verticalSpacer">
             <property name="orientation">
              <enum>Qt::Orientation::Vertical</enum>
@@ -113,99 +123,106 @@
             </property>
            </spacer>
           </item>
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="arg_2"/>
-          </item>
-          <item row="5" column="0">
-           <widget class="QLabel" name="com_6">
-            <property name="text">
-             <string>moment Z</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <widget class="QCheckBox" name="fl_1">
+          <item row="5" column="2">
+           <widget class="QCheckBox" name="Mom_z_CheBx">
             <property name="text">
              <string/>
             </property>
            </widget>
-          </item>
-          <item row="2" column="0" alignment="Qt::AlignmentFlag::AlignHCenter">
-           <widget class="QLabel" name="com_3">
-            <property name="text">
-             <string>Z</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="com_5">
-            <property name="text">
-             <string>moment Y</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="2">
-           <widget class="QCheckBox" name="fl_3">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="arg_1"/>
-          </item>
-          <item row="6" column="1">
-           <widget class="QLineEdit" name="arg_pressure"/>
           </item>
           <item row="5" column="1">
-           <widget class="QLineEdit" name="arg_6"/>
+           <widget class="QLineEdit" name="Mom_z_le"/>
+          </item>
+          <item row="6" column="1">
+           <widget class="QLineEdit" name="pres_le"/>
           </item>
           <item row="3" column="0">
-           <widget class="QLabel" name="com_4">
+           <widget class="QLabel" name="Mom_x_lbl">
             <property name="text">
              <string>moment X</string>
             </property>
            </widget>
           </item>
-          <item row="6" column="0" alignment="Qt::AlignmentFlag::AlignHCenter">
-           <widget class="QLabel" name="com_7">
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="Mom_x_le"/>
+          </item>
+          <item row="0" column="0" alignment="Qt::AlignmentFlag::AlignHCenter">
+           <widget class="QLabel" name="x_lbl">
             <property name="text">
-             <string>pressure</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QLineEdit" name="arg_5"/>
-          </item>
-          <item row="2" column="1">
-           <widget class="QLineEdit" name="arg_3"/>
-          </item>
-          <item row="3" column="2">
-           <widget class="QCheckBox" name="fl_4">
-            <property name="text">
-             <string/>
+             <string>X</string>
             </property>
            </widget>
           </item>
           <item row="1" column="0" alignment="Qt::AlignmentFlag::AlignHCenter">
-           <widget class="QLabel" name="com_2">
+           <widget class="QLabel" name="y_lbl">
             <property name="text">
              <string>Y</string>
             </property>
            </widget>
           </item>
+          <item row="6" column="0" alignment="Qt::AlignmentFlag::AlignHCenter">
+           <widget class="QLabel" name="pres_lbl">
+            <property name="text">
+             <string>pressure</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="x_le"/>
+          </item>
+          <item row="4" column="1">
+           <widget class="QLineEdit" name="Mom_y_le"/>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="z_le"/>
+          </item>
+          <item row="4" column="2">
+           <widget class="QCheckBox" name="Mom_y_ChBx">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QCheckBox" name="y_ChBx">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QCheckBox" name="x_ChBx">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="0">
+           <widget class="QLabel" name="displ_nt_lbl">
+            <property name="text">
+             <string>displacement</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="2">
+           <widget class="QLineEdit" name="displ_nt_le"/>
+          </item>
          </layout>
         </item>
-        <item row="1" column="0">
-         <widget class="QPushButton" name="pushButton">
+        <item row="3" column="0">
+         <widget class="QTreeView" name="treeView">
           <property name="minimumSize">
            <size>
-            <width>270</width>
+            <width>326</width>
             <height>0</height>
            </size>
           </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="filename_lbl">
           <property name="text">
-           <string>select file</string>
+           <string/>
           </property>
          </widget>
         </item>

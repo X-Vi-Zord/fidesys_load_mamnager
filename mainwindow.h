@@ -25,20 +25,18 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-
-
 signals:
 public slots:
 
-    void handleItemClicked(const QModelIndex &index);
+    void takeItemFromTree(const QModelIndex &index);
 
 private slots :
 
-    void on_pushButton_clicked();
+    void on_find_file_Bm_clicked();
 
-    void on_Save_clicked();
+    void on_Save_Bm_clicked();
 
-    bool on_Start_clicked();
+    bool on_Start_Bm_clicked();
 
 private:
 
@@ -48,17 +46,22 @@ private:
     std::array<QLineEdit*, 6> _lines;
     std::array<QCheckBox*, 6> _flags;
     std::array<QLabel*, 6> _labels;
-
+    std::map<unsigned, QString> _loads = {{3,"pressure" },{5,"force"},{35,"distributed force"}, {0,"restraints"}};
     QJsonObject _doc, _buffer;
     QStandardItemModel *_model;
+    QStandardItem *item;
 
 
-    void find_conditions();
-    void set_conditions(const QString, const int);
+
+
+    void findConditions();
+    void setConditions(const unsigned id, const QString = "restraint", const unsigned type = 0);
     void hide() const;
     void display() const;
-    void take_Changes();
+    void TakeChanges();
     void loadFile(const QString &fileName); //Открытие файла
+    void createTree();
+    void FindPath();
 
 
 };
