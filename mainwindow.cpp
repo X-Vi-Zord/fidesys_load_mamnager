@@ -13,6 +13,8 @@
 #include <QModelIndex>
 #include <QProcess>
 #include <QMessageBox>
+#include <QPushButton>
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -23,13 +25,21 @@ MainWindow::MainWindow(QWidget *parent)
     _labels = {ui->x_lbl, ui->y_lbl, ui->z_lbl, ui->Mom_x_lbl, ui->Mom_y_lbl, ui->Mom_z_lbl};
     _flags = {ui->x_ChBx, ui->y_ChBx, ui->z_ChBx, ui->Mom_x_ChBx, ui->Mom_y_ChBx, ui->Mom_z_CheBx};
     _model = new QStandardItemModel(ui->treeView);
-    createTree();
     ui->treeView->setModel(_model);
-    hide();
-    ui->treeView->header()->hide();
-    ui->Save_Bm->hide(); ui->parameters->hide();
-    this->setMinimumSize(680,640);
-    connect(ui->treeView, &QTreeView::clicked, this, &MainWindow::takeItemFromTree);
+
+    for(const auto& line: _lines)
+    {line->setValidator(new QIntValidator);}
+    ui->displ_nt_le->setValidator(new QIntValidator);
+    ui->pres_le->setValidator(new QIntValidator);
+    Hide();
+    ui->Save_Bm->hide();
+    ui->parameters->hide();
+
+    connect(ui->treeView, &QTreeView::clicked, this, &MainWindow::TakeItemFromTree);
+    connect(ui->Save_Bm, &QPushButton::clicked, this, &MainWindow::Save);
+    connect(ui->Start_Bm, &QPushButton::clicked, this, &MainWindow::Start);
+    connect(ui->find_file_Bm, &QPushButton::clicked, this, &MainWindow::FindFile);
+
 }
 
 MainWindow::~MainWindow()
@@ -37,42 +47,48 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::findConditions()
+void MainWindow::FindConditions()
 {
+    _read_file = {};
     if(!_doc.contains("restraints")) {
         qCritical() << "no restraints";
     }
     else{
+        QJsonArray restraints;
         for (const auto restraint : _doc["restraints"].toArray()){
-            setConditions(restraint.toObject()["id"].toInt());
+            QJsonObject sub_restraints;
+            sub_restraints.insert("type", 0);
+            sub_restraints.insert("name", "resrtraint");
+            sub_restraints.insert("id", restraint.toObject()["id"].toInt());
+            restraints.append(sub_restraints);
         }
+    _read_file.insert("restraints", restraints);
     }
     if(_doc["loads"].isNull()){
         qCritical() << "no loads";
-        return;
     }
+    else{
+    QJsonArray force, dis_force, pressure;
     for (const auto& load : _doc["loads"].toArray()){
-        setConditions(load.toObject()["id"].toInt(),load.toObject()["name"].toString().toLower(), load.toObject()["type"].toInt());
-    }
-}
-
-void MainWindow::setConditions(const unsigned id, const QString name, const unsigned type)
-{
-    // type of load by name
-    for(int row = 0; row < _model->rowCount();row++){
-        if(_model->item(row)->text() == _loads[type]){
-            QStandardItem *subitem = new QStandardItem();
-            subitem->setData(type,1);
-            subitem->setData(name,2);
-            subitem->setData(id,3);
-            subitem->setFlags(_model->item(row)->flags() & ~Qt::ItemIsEditable);
-            _model->item(row)->appendRow(subitem);
-            return;
+        QJsonObject subload;
+        subload.insert("type", load.toObject()["type"].toInt());
+        subload.insert("name", load.toObject()["name"].toString());
+        subload.insert("id", load.toObject()["id"].toInt());
+        switch(load.toObject()["type"].toInt()){
+        case 3: {pressure.append(subload);break;}
+        case 5: {force.append(subload);break;}
+        case 35: {dis_force.append(subload);break;}
+        default: {statusBar()->showMessage("uncnoun load");}
+        }
+        _read_file.insert("force",force);
+        _read_file.insert("pressure",pressure);
+        _read_file.insert("distributed force",dis_force);
         }
     }
+    NewTree();
 }
 
-void MainWindow::hide() const
+void MainWindow::Hide() const
 {
     for(int i = 0; i < 6; i++) {
         _lines[i]->hide();
@@ -85,7 +101,7 @@ void MainWindow::hide() const
     ui->displ_nt_le->hide();
 }
 
-void MainWindow::display() const
+void MainWindow::Display() const
 {
     if(_buffer.isEmpty()){
         return;
@@ -116,15 +132,15 @@ void MainWindow::display() const
     }
 }
 
-void MainWindow::takeItemFromTree(const QModelIndex &index)
+void MainWindow::TakeItemFromTree(const QModelIndex &index)
 {
     if (!index.parent().isValid()) {
         return;}
-    item =  _model->itemFromIndex(index);
-    if (!(item->data(1).toInt() == 0)) {
+    _item =  _model->itemFromIndex(index);
+    if (!(_item->data(1).toInt() == 0)) {
         for(const auto& value : _doc["loads"].toArray()){
             QJsonObject iterator = value.toObject();
-            if (iterator["id"].toInt()==item->data(3).toInt()&&iterator["type"].toInt()==item->data(1).toInt()){
+            if (iterator["id"].toInt()==_item->data(3).toInt()&&iterator["type"].toInt()==_item->data(1).toInt()){
                 _buffer = iterator;
                 break;
             }
@@ -132,25 +148,25 @@ void MainWindow::takeItemFromTree(const QModelIndex &index)
     }else{
         for(const auto& value : _doc["restraints"].toArray()){
             QJsonObject iterator = value.toObject();
-            if (iterator["id"]==item->data(3).toInt()){
+            if (iterator["id"]==_item->data(3).toInt()){
                 _buffer = iterator;
                 break;
             }
         }
     }
-    hide();
-    display();
+    Hide();
+    Display();
 }
 
 void MainWindow::TakeChanges()
 {
-    if(item->data(1).toInt() == 0) {
+    if(_item->data(1).toInt() == 0) {
         QJsonArray r_array =  _doc["restraints"].toArray();
         for( int i = 0; i < r_array.size();i++) {
-            if (r_array[i].toObject()["id"]==item->data(3).toInt()){
+            if (r_array[i].toObject()["id"]==_item->data(3).toInt()){
                 r_array[i] = QJsonValue(_buffer);
                 _doc.insert("restraints",r_array);
-                statusBar()->showMessage("Changes for" + item->data(2).toString() +  item->data(3).toString() + " saved");
+                statusBar()->showMessage("Changes for" + _item->data(2).toString() +  _item->data(3).toString() + " saved");
                 return;}
         }
     }
@@ -159,48 +175,42 @@ void MainWindow::TakeChanges()
         if (l_array[i].toObject()["id"]==_buffer["id"] && l_array[i].toObject()["name"] ==_buffer["name"]){
             l_array[i] = QJsonValue(QJsonObject(_buffer));
             _doc["loads"] = l_array;
-            statusBar()->showMessage("Changes for" + item->data(2).toString() +  item->data(3).toString() + " saved");
+            statusBar()->showMessage("Changes for" + _item->data(2).toString() +  _item->data(3).toString() + " saved");
             return;}
     }
 }
 
-void MainWindow::createTree()
+void MainWindow::FindFile()
 {
-    for(auto const& imap: _loads) {
-        QStandardItem *item = new QStandardItem(imap.second);
-        _model->appendRow(item);
-        item->setFlags(item->flags() & ~Qt::ItemIsEditable);
-    }
-}
-
-void MainWindow::on_find_file_Bm_clicked()
-{
-    QString filePath = QFileDialog::getOpenFileName(this);
-    if (filePath.isEmpty()){
+    _file_path = QFileDialog::getOpenFileName(this);
+    if (_file_path.isEmpty()){
         statusBar()->showMessage("file is Empty");
         return;
     }
-    QFile file(filePath);
+    if(_file_path.section(".",-1)!="fc"){
+        statusBar()->showMessage("file not .fc");
+        return;
+    }
+    QFile file(_file_path);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        QMessageBox::warning(this, tr("%1").arg(filePath),
-                             tr("Can't open file %1\nError: %2.")
-                                 .arg(filePath)
+        QMessageBox::warning(this, QString("%1").arg(_file_path),
+                             QString("Can't open file %1\nError: %2.")
+                                 .arg(_file_path)
                                  .arg(file.errorString()));
         return;
     }
 
     _doc = (QJsonDocument::fromJson(file.readAll())).object();
     _model->clear();
-    createTree();
-    findConditions();
-    hide();
+    FindConditions();
+    Hide();
     ui->Save_Bm->hide();
     ui->parameters->hide();
-    statusBar()->showMessage("file " + filePath.section("/",-1) +  " is open");
-    ui->filename_lbl->setText(filePath.section("/",-1));
+    statusBar()->showMessage("file " + _file_path.section("/",-1) +  " is open");
+    ui->filename_lbl->setText(_file_path.section("/",-1));
 }
 
-void MainWindow::on_Save_Bm_clicked()
+void MainWindow::Save()
 {
     QJsonArray data, flag, pres, subpres, displace;
     for(int i = 0; i < 6; i++){
@@ -217,7 +227,7 @@ void MainWindow::on_Save_Bm_clicked()
     displace.append(subdis);
     subpres.append(ui->pres_le->text().toDouble());
     pres.append(subpres);
-    switch (item->data(1).toInt()) {
+    switch (_item->data(1).toInt()) {
     case 0:     {_buffer.insert("flag", flag);_buffer.insert("data", displace);break;}
     case 3:     {_buffer.insert("data", pres);break;}
     default:    {_buffer.insert("data", data);break;}
@@ -225,7 +235,7 @@ void MainWindow::on_Save_Bm_clicked()
     TakeChanges();
 }
 
-bool MainWindow::on_Start_Bm_clicked()
+bool MainWindow::Start()
 {
     statusBar()->showMessage("Calculation started");
     QApplication::processEvents();
@@ -280,4 +290,29 @@ bool MainWindow::on_Start_Bm_clicked()
     qInfo() << "!!DONE!!";
     statusBar()->showMessage("Calculation is DONE");
     return true;
+}
+
+void MainWindow::NewTree(){
+    _model->setHorizontalHeaderItem(0, new QStandardItem("data"));
+    _model->setHorizontalHeaderItem(1, new QStandardItem("id"));
+    for(const auto& imap: _loads){
+        if(_read_file.contains(imap.second))
+        {
+            QStandardItem *item = new QStandardItem(imap.second);
+            for(const auto& value : _read_file[imap.second].toArray())
+            {
+                QStandardItem *sub = new QStandardItem();
+                sub->setData(QString::number(value.toObject()["type"].toInt()),1);
+                sub->setData(value.toObject()["name"].toString(),2);
+                sub->setData(QString::number(value.toObject()["id"].toInt()),3);
+                const QString name = value.toObject()["name"].toString();
+                sub->setText(name);
+                item->setChild(value.toObject()["id"].toInt()-1,sub);
+                item->setChild(value.toObject()["id"].toInt()-1,1,new QStandardItem(QString::number(value.toObject()["id"].toInt())));
+                sub->setFlags(item->flags() & ~Qt::ItemIsEditable);
+            }
+            _model->appendRow(item);
+            item->setFlags(item->flags() & ~Qt::ItemIsEditable);
+        }
+    }
 }

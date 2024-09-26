@@ -10,8 +10,6 @@
 #include <QLabel>
 #include <QModelIndex>
 
-
-
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -23,46 +21,38 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
+
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-signals:
+
 public slots:
 
-    void takeItemFromTree(const QModelIndex &index);
+    void TakeItemFromTree(const QModelIndex&);
 
 private slots :
 
-    void on_find_file_Bm_clicked();
-
-    void on_Save_Bm_clicked();
-
-    bool on_Start_Bm_clicked();
+    void FindFile();
+    void Save();
+    bool Start();
 
 private:
 
-    Ui::MainWindow *ui;
-    // можно обобщить до find.
-
-    std::array<QLineEdit*, 6> _lines;
-    std::array<QCheckBox*, 6> _flags;
-    std::array<QLabel*, 6> _labels;
+    Ui::MainWindow  *ui;
+    std::array<QLineEdit*, 6>   _lines;
+    std::array<QCheckBox*, 6>   _flags;
+    std::array<QLabel*, 6>      _labels;
     std::map<unsigned, QString> _loads = {{3,"pressure" },{5,"force"},{35,"distributed force"}, {0,"restraints"}};
-    QJsonObject _doc, _buffer;
-    QStandardItemModel *_model;
-    QStandardItem *item;
+    QJsonObject                 _doc, _buffer;
+    QJsonObject                 _read_file;
+    QStandardItemModel         *_model;
+    QStandardItem              *_item;
+    QString                     _file_path;
 
-
-
-
-    void findConditions();
-    void setConditions(const unsigned id, const QString = "restraint", const unsigned type = 0);
-    void hide() const;
-    void display() const;
+    void Display() const;
+    void FindConditions();
+    void Hide() const;
+    void LoadFile(const QString&);
+    void NewTree();
     void TakeChanges();
-    void loadFile(const QString &fileName); //Открытие файла
-    void createTree();
-    void FindPath();
-
-
 };
 #endif // MAINWINDOW_H
