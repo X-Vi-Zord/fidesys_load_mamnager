@@ -237,8 +237,6 @@ void MainWindow::Save()
 
 bool MainWindow::Start()
 {
-    statusBar()->showMessage("Calculation started");
-    QApplication::processEvents();
     QFile tmp_fc("tmp.fc");
     if (!tmp_fc.open(QIODevice::WriteOnly))
     {
@@ -249,15 +247,20 @@ bool MainWindow::Start()
     tmp_fc.write(QJsonDocument(_doc).toJson(QJsonDocument::Indented));
     tmp_fc.close();
 
-    QString path_to_Calc = "D:/CAE-Fidesys-7.0/bin/FidesysCalc.exe";
-
-    if (!QFile(path_to_Calc).exists())
-    {
-        qCritical() << "FidesysCalc not found!";
-        statusBar()->showMessage("FidesysCalc not found!");
-
+    QRegularExpression pattern(".*FidesysCalc(\\.exe)?$");
+    statusBar()->showMessage("set path to FidesysCalc");
+    QString path_to_Calc = QFileDialog::getOpenFileName(this);
+    if(!(QFile(path_to_Calc).exists()&&pattern.match(path_to_Calc).hasMatch())) {
+        statusBar()->showMessage(" FidesysCalc not found!");
+        QMessageBox *info = new QMessageBox();
+        info->setText("path is not valid");
+        info->show();
         return false;
     }
+    statusBar()->showMessage("Calculation started");
+    QApplication::processEvents();
+
+
     if (!QDir(QDir::currentPath().append("results")).exists())
     {
         QDir().mkdir("results");
