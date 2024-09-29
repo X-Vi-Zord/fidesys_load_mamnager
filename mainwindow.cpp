@@ -80,11 +80,11 @@ void MainWindow::FindConditions()
         case 35: {dis_force.append(subload);break;}
         default: {statusBar()->showMessage("uncnoun load");}
         }
-        _read_file.insert("force",force);
-        _read_file.insert("pressure",pressure);
-        _read_file.insert("distributed force",dis_force);
-        }
     }
+    if (!force.isEmpty()) {_read_file.insert("force",force);}
+    if (!pressure.isEmpty()) {_read_file.insert("pressure",pressure);}
+    if (!dis_force.isEmpty()) {_read_file.insert("distributed force",dis_force);}
+        }
     NewTree();
 }
 
@@ -115,7 +115,7 @@ void MainWindow::Display() const
             _flags[i]->show();
             _flags[i]->setChecked(_buffer.value("flag")[i].toInt());
             _labels[i]->show();
-            if(_buffer["data"][0][i]!=0) {
+            if(_buffer["data"][i][0]!=0) {
                 ui->displ_nt_le->setText(QString::number(_buffer.value("data")[i][0].toDouble()));
             }
         }
@@ -295,7 +295,8 @@ bool MainWindow::Start()
     return true;
 }
 
-void MainWindow::NewTree(){
+void MainWindow::NewTree()
+{
     _model->setHorizontalHeaderItem(0, new QStandardItem("data"));
     _model->setHorizontalHeaderItem(1, new QStandardItem("id"));
     for(const auto& imap: _loads){
@@ -308,8 +309,7 @@ void MainWindow::NewTree(){
                 sub->setData(QString::number(value.toObject()["type"].toInt()),1);
                 sub->setData(value.toObject()["name"].toString(),2);
                 sub->setData(QString::number(value.toObject()["id"].toInt()),3);
-                const QString name = value.toObject()["name"].toString();
-                sub->setText(name);
+                sub->setText(value.toObject()["name"].toString());
                 item->setChild(value.toObject()["id"].toInt()-1,sub);
                 item->setChild(value.toObject()["id"].toInt()-1,1,new QStandardItem(QString::number(value.toObject()["id"].toInt())));
                 sub->setFlags(item->flags() & ~Qt::ItemIsEditable);
