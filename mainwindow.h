@@ -32,8 +32,8 @@ public slots:
 private slots :
 
     void FindFile();
-    void Save();
-    bool Start();
+    void SetChanges();
+    bool SaveToFile();
 
 private:
 

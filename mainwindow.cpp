@@ -32,13 +32,16 @@ MainWindow::MainWindow(QWidget *parent)
     ui->displ_nt_le->setValidator(new QIntValidator);
     ui->pres_le->setValidator(new QIntValidator);
     Hide();
-    ui->Save_Bm->hide();
+    ui->Set_changes_Bn->hide();
     ui->parameters->hide();
-
+    ui->Set_changes_Bn->setToolTip("Set changes");
+    ui->Save_file_Bn->setToolTip("save to new file");
+    ui->find_file_Bn->setToolTip("select file");
+    statusBar()->showMessage("select file to start");
     connect(ui->treeView, &QTreeView::clicked, this, &MainWindow::TakeItemFromTree);
-    connect(ui->Save_Bm, &QPushButton::clicked, this, &MainWindow::Save);
-    connect(ui->Start_Bm, &QPushButton::clicked, this, &MainWindow::Start);
-    connect(ui->find_file_Bm, &QPushButton::clicked, this, &MainWindow::FindFile);
+    connect(ui->Set_changes_Bn, &QPushButton::clicked, this, &MainWindow::SetChanges);
+    connect(ui->Save_file_Bn, &QPushButton::clicked, this, &MainWindow::SaveToFile);
+    connect(ui->find_file_Bn, &QPushButton::clicked, this, &MainWindow::FindFile);
 
 }
 
@@ -106,7 +109,7 @@ void MainWindow::Display() const
     if(_buffer.isEmpty()){
         return;
     }
-    ui->Save_Bm->show(); ui->parameters->show();
+    ui->Set_changes_Bn->show(); ui->parameters->show();
     if(_buffer.contains("flag")) {
         ui->displ_nt_lbl->show();
         ui->displ_nt_le->show();
@@ -182,13 +185,12 @@ void MainWindow::TakeChanges()
 
 void MainWindow::FindFile()
 {
-    _file_path = QFileDialog::getOpenFileName(this);
+    _file_path = QFileDialog::getOpenFileName(this,
+                                    "Открыть файл",
+                                    "",
+                                    "Fidesys file (*.fc)");
     if (_file_path.isEmpty()){
         statusBar()->showMessage("file is Empty");
-        return;
-    }
-    if(_file_path.section(".",-1)!="fc"){
-        statusBar()->showMessage("file not .fc");
         return;
     }
     QFile file(_file_path);
@@ -204,13 +206,13 @@ void MainWindow::FindFile()
     _model->clear();
     FindConditions();
     Hide();
-    ui->Save_Bm->hide();
+    ui->Set_changes_Bn->hide();
     ui->parameters->hide();
     statusBar()->showMessage("file " + _file_path.section("/",-1) +  " is open");
     ui->filename_lbl->setText(_file_path.section("/",-1));
 }
 
-void MainWindow::Save()
+void MainWindow::SetChanges()
 {
     QJsonArray data, flag, pres, subpres, displace;
     for(int i = 0; i < 6; i++){
@@ -235,71 +237,31 @@ void MainWindow::Save()
     TakeChanges();
 }
 
-bool MainWindow::Start()
+bool MainWindow::SaveToFile()
 {
-    QFile tmp_fc("tmp.fc");
-    if (!tmp_fc.open(QIODevice::WriteOnly))
+
+    QString file_name = QFileDialog::getSaveFileName(
+                                                this,
+                                                "Сохранить файл",
+                                                _file_path,
+                                                "Fidesys file (*.fc)");
+    QFile new_file(file_name);
+    if (!new_file.open(QIODevice::WriteOnly))
     {
         qCritical() << "Can't write new .fc file";
         statusBar()->showMessage("Can't write new .fc file");
         return false;
     }
-    tmp_fc.write(QJsonDocument(_doc).toJson(QJsonDocument::Indented));
-    tmp_fc.close();
-
-    QRegularExpression pattern(".*FidesysCalc(\\.exe)?$");
-    statusBar()->showMessage("set path to FidesysCalc");
-    QString path_to_Calc = QFileDialog::getOpenFileName(this);
-    if(!(QFile(path_to_Calc).exists()&&pattern.match(path_to_Calc).hasMatch())) {
-        statusBar()->showMessage(" FidesysCalc not found!");
-        QMessageBox *info = new QMessageBox();
-        info->setText("path is not valid");
-        info->show();
-        return false;
-    }
-    statusBar()->showMessage("Calculation started");
-    QApplication::processEvents();
-
-
-    if (!QDir(QDir::currentPath().append("results")).exists())
-    {
-        QDir().mkdir("results");
-    }
-
-    QMap<QString, QByteArray> calc_output;
-
-    QProcess *process = new QProcess();
-    QStringList calc_args;
-    calc_args << "--input=" + QDir::currentPath() + "/tmp.fc"
-              << "--output=" + QDir::currentPath() + "/results/tmp.pvd";
-    qInfo() << "Starting process" << path_to_Calc << calc_args[0] << calc_args[1];
-
-    process->setProgram(path_to_Calc);
-    process->setArguments(calc_args);
-    process->start();
-    process->waitForStarted(-1);
-    qInfo() << "Calculation started";
-    process->waitForFinished(-1);
-    calc_output["errors"] = process->readAllStandardError();
-    calc_output["output"] = process->readAllStandardOutput();
-    statusBar()->showMessage("Error");
-    statusBar()->showMessage("Calc output" + QString(calc_output["output"]),2000);
-    qInfo() << "Errors:" << QString(calc_output["errors"]);
-    qInfo() << "Calc output" << QString(calc_output["output"]);
-    if (QString(calc_output["errors"]) != "")
-    {
-        return false;
-    }
-    qInfo() << "!!DONE!!";
-    statusBar()->showMessage("Calculation is DONE");
-    return true;
+    new_file.write(QJsonDocument(_doc).toJson(QJsonDocument::Indented));
+    new_file.close();
+return true;
 }
 
 void MainWindow::NewTree()
 {
-    _model->setHorizontalHeaderItem(0, new QStandardItem("data"));
-    _model->setHorizontalHeaderItem(1, new QStandardItem("id"));
-    for(const auto& imap: _loads){
+    _model->setHorizontalHeaderLabels(QStringList() << "data" << "id");
+    ui->treeView->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+        for(const auto& imap: _loads){
         if(_read_file.contains(imap.second))
         {
             QStandardItem *item = new QStandardItem(imap.second);
@@ -319,3 +281,5 @@ void MainWindow::NewTree()
         }
     }
 }
+
+
